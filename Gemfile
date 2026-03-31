@@ -17,7 +17,7 @@ gem "bootsnap", require: false
 
 gem "devise"
 gem "pundit"
-gem "pagy", "~> 9.0"
+gem "pagy", "~> 43.4"
 
 group :development, :test do
   gem "debug", platforms: %i[ mri windows ]
