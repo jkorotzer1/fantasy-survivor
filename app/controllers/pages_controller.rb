@@ -7,6 +7,8 @@ class PagesController < ApplicationController
   end
 
   def board
+    current_user.update_column(:last_board_visit_at, Time.current) if user_signed_in?
+    @board_has_new = false
     @pinned_messages = Message.top_level.pinned
       .includes(:user, replies: :user, poll_options: :poll_votes)
     @pagy, @messages = pagy(

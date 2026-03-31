@@ -20,7 +20,9 @@
             <div class="hidden md:flex ml-8 space-x-4">
               <%= link_to "Seasons", seasons_path, class: "text-green-200 hover:text-white px-3 py-2 text-sm font-medium" %>
               <%= link_to "Rules & Scoring", rules_path, class: "text-green-200 hover:text-white px-3 py-2 text-sm font-medium" %>
-              <%= link_to "Board", board_path, class: "text-green-200 hover:text-white px-3 py-2 text-sm font-medium" %>
+              <%= link_to board_path, class: "text-green-200 hover:text-white px-3 py-2 text-sm font-medium inline-flex items-center gap-1" do %>
+                Board<% if @board_has_new %><span class="inline-block w-2 h-2 rounded-full bg-red-500"></span><% end %>
+              <% end %>
               <% if current_user&.admin? %>
                 <%= link_to "Admin", admin_root_path, class: "text-yellow-300 hover:text-yellow-100 px-3 py-2 text-sm font-medium" %>
               <% end %>
@@ -51,7 +53,9 @@
         <div class="mx-auto max-w-7xl px-4 space-y-1">
           <%= link_to "Seasons", seasons_path, class: "block text-green-200 hover:text-white px-3 py-2 text-sm font-medium rounded" %>
           <%= link_to "Rules & Scoring", rules_path, class: "block text-green-200 hover:text-white px-3 py-2 text-sm font-medium rounded" %>
-          <%= link_to "Board", board_path, class: "block text-green-200 hover:text-white px-3 py-2 text-sm font-medium rounded" %>
+          <%= link_to board_path, class: "text-green-200 hover:text-white px-3 py-2 text-sm font-medium rounded inline-flex items-center gap-1" do %>
+            Board<% if @board_has_new %><span class="inline-block w-2 h-2 rounded-full bg-red-500"></span><% end %>
+          <% end %>
           <% if current_user&.admin? %>
             <%= link_to "Admin", admin_root_path, class: "block text-yellow-300 hover:text-yellow-100 px-3 py-2 text-sm font-medium rounded" %>
           <% end %>

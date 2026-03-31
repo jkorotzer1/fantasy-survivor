@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_03_30_000003) do
+ActiveRecord::Schema[7.2].define(version: 2026_03_30_000004) do
   create_table "contestants", force: :cascade do |t|
     t.integer "season_id", null: false
     t.string "name", limit: 100, null: false
@@ -114,6 +114,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_03_30_000003) do
     t.datetime "remember_created_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "last_board_visit_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
