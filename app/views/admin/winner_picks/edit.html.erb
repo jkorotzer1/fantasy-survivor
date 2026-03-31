@@ -1,0 +1,51 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Edit Winner Pick</h1>
+    <p class="text-gray-500"><%= @winner_pick.participation.user.display_name %> — <%= @winner_pick.participation.season.name %></p>
+  </div>
+  <%= link_to "← Score Board", scores_admin_season_path(@winner_pick.participation.season), class: "text-gray-500 text-sm" %>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6 max-w-xl">
+  <% if @winner_pick.errors.any? %>
+    <div class="mb-4 bg-red-50 border border-red-200 rounded p-3">
+      <ul class="text-red-700 text-sm list-disc pl-4">
+        <% @winner_pick.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: [:admin, @winner_pick] do |f| %>
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-gray-700 mb-2">Contestant</label>
+      <div class="space-y-2">
+        <% @contestants.each do |c| %>
+          <label class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-gray-50
+            <%= @winner_pick.contestant_id == c.id ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200' %>">
+            <%= f.radio_button :contestant_id, c.id, class: "text-yellow-500" %>
+            <span class="text-sm text-gray-800"><%= c.name %></span>
+            <% unless c.active? %>
+              <span class="text-xs text-gray-400">(<%= c.status %>)</span>
+            <% end %>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="mb-5">
+      <label class="block text-sm font-medium text-gray-700 mb-1">Week Locked</label>
+      <p class="text-xs text-gray-500 mb-2">Determines point value — Week 1 = 40pts, Week 5 = 27pts, etc.</p>
+      <%= f.number_field :week_locked, min: 1, max: 18,
+            class: "border border-gray-300 rounded px-3 py-2 text-sm w-24" %>
+      <% pts = WinnerPick::POINTS_BY_WEEK.fetch(@winner_pick.week_locked, 0) %>
+      <span class="ml-2 text-sm text-gray-500">→ worth <strong><%= pts %> pts</strong> if correct</span>
+    </div>
+
+    <div class="flex gap-3">
+      <%= f.submit "Save Changes", class: "bg-yellow-600 text-white px-5 py-2 rounded font-medium hover:bg-yellow-500 cursor-pointer" %>
+      <%= link_to "Cancel", scores_admin_season_path(@winner_pick.participation.season), class: "px-5 py-2 text-sm text-gray-600 hover:text-gray-800" %>
+    </div>
+  <% end %>
+</div>

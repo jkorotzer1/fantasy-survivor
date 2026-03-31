@@ -1,0 +1,90 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-900">My Picks</h1>
+    <p class="text-gray-500"><%= @season.name %></p>
+  </div>
+  <%= link_to "← Season", season_path(@season), class: "text-green-700 hover:text-green-600 text-sm" %>
+</div>
+
+<!-- Winner Pick -->
+<div class="bg-white shadow rounded-lg p-6 mb-8">
+  <h2 class="text-lg font-semibold text-gray-800 mb-3">Winner Pick</h2>
+  <% if @winner_pick %>
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="text-gray-700">
+          <span class="font-bold"><%= @winner_pick.contestant.name %></span>
+          <span class="text-gray-500 text-sm ml-2">(picked in Week <%= @winner_pick.week_locked %>)</span>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          Worth <%= @winner_pick.points_if_correct %> pts if correct ·
+          <% if @winner_pick.correct? %>
+            <span class="text-green-600 font-semibold">✓ Correct! +<%= @winner_pick.awarded_points %> pts</span>
+          <% else %>
+            <span class="text-gray-400">Season not complete yet</span>
+          <% end %>
+        </p>
+      </div>
+    </div>
+  <% else %>
+    <p class="text-gray-500 mb-3">You haven't made your winner pick yet.</p>
+    <%= link_to "Make Winner Pick", new_season_winner_pick_path(@season),
+        class: "bg-yellow-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-yellow-500" %>
+  <% end %>
+</div>
+
+<!-- Weekly Picks -->
+<div class="bg-white shadow rounded-lg overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-200">
+    <h2 class="text-lg font-semibold text-gray-800">Weekly Picks</h2>
+  </div>
+  <div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Week</th>
+        <th class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Contestant</th>
+        <th class="px-3 py-2 sm:px-6 sm:py-3 text-left text-xs font-medium text-gray-500 uppercase">Events</th>
+        <th class="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase">Score</th>
+        <th class="px-3 py-2 sm:px-6 sm:py-3 text-right text-xs font-medium text-gray-500 uppercase">Action</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% @weeks.each do |week| %>
+        <% data = @breakdown[week.number] %>
+        <tr class="<%= data ? '' : 'bg-gray-50' %>">
+          <td class="px-3 py-2 sm:px-6 sm:py-4 text-sm text-gray-900">
+            Week <%= week.number %>
+            <% if week.air_date %>
+              <span class="text-gray-400 text-xs block"><%= week.air_date.strftime("%b %d") %></span>
+            <% end %>
+          </td>
+          <td class="px-3 py-2 sm:px-6 sm:py-4 text-sm text-gray-900">
+            <%= data ? data[:contestant] : "—" %>
+          </td>
+          <td class="px-3 py-2 sm:px-6 sm:py-4 text-sm text-gray-600">
+            <% if data %>
+              <% data[:events].each do |evt| %>
+                <span class="inline-block mr-1 mb-1 bg-gray-100 text-gray-700 rounded px-1.5 py-0.5 text-xs">
+                  <%= evt[:label] %> (<%= evt[:points] > 0 ? "+#{evt[:points]}" : evt[:points] %>)
+                </span>
+              <% end %>
+            <% end %>
+          </td>
+          <td class="px-3 py-2 sm:px-6 sm:py-4 text-sm font-semibold text-right <%= data && data[:score] > 0 ? 'text-green-600' : data && data[:score] < 0 ? 'text-red-600' : 'text-gray-400' %>">
+            <%= data ? (data[:score] > 0 ? "+#{data[:score]}" : data[:score]) : "—" %>
+          </td>
+          <td class="px-3 py-2 sm:px-6 sm:py-4 text-right">
+            <% if !week.locked? %>
+              <%= link_to data ? "Change" : "Pick", season_week_path(@season, week),
+                  class: "text-green-700 hover:text-green-600 text-sm font-medium" %>
+            <% elsif !data %>
+              <span class="text-gray-400 text-sm">Locked</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  </div>
+</div>

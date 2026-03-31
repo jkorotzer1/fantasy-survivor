@@ -1,0 +1,37 @@
+<% if contestant.errors.any? %>
+  <div class="mb-4 bg-red-50 border border-red-200 rounded p-3">
+    <ul class="text-red-700 text-sm list-disc pl-4">
+      <% contestant.errors.full_messages.each do |msg| %><li><%= msg %></li><% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="space-y-4">
+  <div>
+    <%= f.label :name, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :name, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm" %>
+  </div>
+  <div>
+    <%= f.label :status, class: "block text-sm font-medium text-gray-700" %>
+    <%= f.select :status, Contestant.statuses.keys.map { |s| [s.capitalize, s] },
+        {}, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm" %>
+  </div>
+  <div>
+    <%= f.label :eliminated_week, "Eliminated Week (blank if still in)", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.number_field :eliminated_week, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm" %>
+  </div>
+  <div class="grid grid-cols-3 gap-3">
+    <div class="col-span-2">
+      <%= f.label :tribe, "Current Tribe", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.text_field :tribe, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm", placeholder: "e.g. vatu" %>
+    </div>
+    <div>
+      <%= f.label :tribe_from_week, "From Week", class: "block text-sm font-medium text-gray-700" %>
+      <%= f.number_field :tribe_from_week, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm", placeholder: "e.g. 5" %>
+    </div>
+  </div>
+  <div>
+    <%= f.label :previous_tribes_input, "Previous Tribes (oldest first, format: name:from:to)", class: "block text-sm font-medium text-gray-700" %>
+    <%= f.text_field :previous_tribes_input, class: "mt-1 block w-full rounded border-gray-300 shadow-sm text-sm", placeholder: "e.g. calo:1:4, cila:5:8" %>
+  </div>
+</div>

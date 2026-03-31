@@ -1,0 +1,55 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Weeks</h1>
+    <p class="text-gray-500"><%= @season.name %></p>
+  </div>
+  <div class="flex gap-2">
+    <%= link_to "← Season", admin_season_path(@season), class: "text-gray-500 text-sm" %>
+    <%= link_to "Add Week", new_admin_season_week_path(@season),
+        class: "bg-green-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-600" %>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded-lg overflow-hidden">
+  <div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Week</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Air Date</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Picks Lock</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% @weeks.each do |week| %>
+        <tr>
+          <td class="px-6 py-4 text-sm font-medium text-gray-900">Week <%= week.number %></td>
+          <td class="px-6 py-4 text-sm text-gray-600"><%= week.air_date&.strftime("%b %d, %Y") || "—" %></td>
+          <td class="px-6 py-4 text-sm text-gray-600">
+            <%= week.picks_locked_at.in_time_zone("Eastern Time (US & Canada)").strftime("%b %d %I:%M %p ET") %>
+            <% if week.locked? %>
+              <span class="ml-1 text-red-500 text-xs">Locked</span>
+            <% end %>
+          </td>
+          <td class="px-6 py-4">
+            <% if week.scored? %>
+              <span class="bg-green-100 text-green-800 text-xs px-2 py-0.5 rounded-full">Scored</span>
+            <% else %>
+              <span class="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded-full">Pending</span>
+            <% end %>
+          </td>
+          <td class="px-6 py-4 text-right text-sm space-x-2">
+            <%= link_to "Events", admin_season_week_scoring_events_path(@season, week), class: "text-green-600 hover:text-green-500 font-medium" %>
+            <%= link_to "Edit", edit_admin_season_week_path(@season, week), class: "text-blue-600 hover:text-blue-500" %>
+            <%= button_to "Delete", admin_season_week_path(@season, week), method: :delete,
+                data: { turbo_confirm: "Delete Week #{week.number}? This will also remove all picks and scoring events for this week." },
+                class: "text-red-600 hover:text-red-500 bg-transparent border-0 cursor-pointer text-sm" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  </div>
+</div>

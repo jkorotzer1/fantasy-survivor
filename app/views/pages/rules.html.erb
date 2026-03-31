@@ -1,0 +1,160 @@
+<div class="max-w-4xl mx-auto">
+  <h1 class="text-3xl font-bold text-gray-900 mb-8">How to Play</h1>
+
+  <!-- Rules overview -->
+  <div class="bg-white rounded-lg shadow p-6 mb-8 space-y-4 text-gray-700 leading-relaxed">
+    <p>
+      There is a <strong>$10 buy-in</strong> to participate. Each week you will select one castaway to root for.
+      Your chosen castaway earns points for that week based on their in-game actions (see the scoring table below).
+      You can pick the same castaway at most <strong>twice</strong> during the season.
+      Multiple players can select the same castaway in any given week.
+    </p>
+    <p>
+      At any point during the season you may choose the castaway you think will win Sole Survivor.
+      The earlier you commit, the more points you're eligible to earn: picks made in Week 1 are worth up to <strong>40 points</strong>,
+      decreasing each week through the finale. Once you submit your winner pick it is <strong>locked in for the entire season</strong>
+      and cannot be changed.
+    </p>
+    <p>
+      Make your weekly pick under <strong>My Picks</strong> after joining a season, and your winner pick under
+      <strong>Winner Pick</strong> from the season page.
+      Picks <strong>lock at 8:00 PM Eastern</strong> on the night of each episode — after that you cannot make a new pick or change your existing one.
+    </p>
+    <p>
+      <strong>Auto-pick:</strong> On the season page you can opt in to automatic weekly picks. If picks lock for the week and you haven't made a selection,
+      the system will randomly choose an eligible castaway for you — one that is still active and that you haven't already
+      used twice. You can turn this on or off at any time from the season page. It is <strong>off by default</strong>.
+    </p>
+  </div>
+
+  <!-- Winner pick points table -->
+  <div class="mb-8">
+    <h2 class="text-xl font-semibold text-gray-800 mb-4">Winner Pick Point Schedule</h2>
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+      <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <% (1..13).each do |w| %>
+              <th class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase">Wk <%= w %></th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <% [40,36,33,30,27,20,15,13,12,9,7,5,0].each do |pts| %>
+              <td class="px-3 py-3 text-center text-sm font-semibold <%= pts > 0 ? 'text-green-700' : 'text-gray-400' %>"><%= pts %></td>
+            <% end %>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+    <p class="text-xs text-gray-400 mt-2">Points available if your winner pick is correct, based on the week you made the pick.</p>
+  </div>
+
+  <div class="grid gap-8 lg:grid-cols-2">
+
+    <!-- Castaways -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Castaways</h2>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <% if @active_season %>
+          <%
+            tribe_colors = {
+              "vatu" => { dot: "bg-purple-500", badge: "bg-purple-100 text-purple-700" },
+              "cila" => { dot: "bg-orange-500", badge: "bg-orange-100 text-orange-700" },
+              "calo" => { dot: "bg-teal-500",   badge: "bg-teal-100 text-teal-700"   },
+            }
+          %>
+          <% contestants = @active_season.contestants.sort_by { |c| [-c.all_tribes.size, c.tribe.to_s, c.name] } %>
+          <% if contestants.any? %>
+            <!-- header -->
+            <div class="px-4 py-1 flex items-center gap-2 border-b border-gray-200 text-xs font-medium text-gray-400 uppercase">
+              <span class="w-4 shrink-0"></span>
+              <span class="flex-1">Castaway</span>
+              <span>Past Tribes</span>
+            </div>
+            <ul class="divide-y divide-gray-100">
+              <% contestants.each do |c| %>
+                <% current_colors = tribe_colors[c.tribe] %>
+                <li class="px-4 py-2 flex items-center gap-2">
+                  <!-- current tribe dot -->
+                  <span class="w-4 shrink-0 flex justify-center">
+                    <% if current_colors %>
+                      <span class="inline-block w-2.5 h-2.5 rounded-full <%= current_colors[:dot] %>"></span>
+                    <% end %>
+                  </span>
+                  <!-- name -->
+                  <span class="flex-1 text-sm text-gray-800"><%= c.name %></span>
+                  <!-- past tribes -->
+                  <span class="flex flex-wrap justify-end gap-x-2 gap-y-0.5">
+                    <% Array(c.previous_tribes).each do |t| %>
+                      <% t_name = t.is_a?(Hash) ? t["name"].to_s : t.to_s %>
+                      <% t_from = t.is_a?(Hash) ? t["from"] : nil %>
+                      <% t_to   = t.is_a?(Hash) ? t["to"]   : nil %>
+                      <% colors = tribe_colors[t_name] %>
+                      <span class="flex items-center gap-1 whitespace-nowrap text-xs text-gray-500">
+                        <% if t_from || t_to %><span>Wk <%= t_from %>–<%= t_to %></span><% end %>
+                        <% if colors %><span class="inline-block w-2 h-2 rounded-full <%= colors[:dot] %>"></span><% end %>
+                      </span>
+                    <% end %>
+                  </span>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="px-4 py-6 text-sm text-gray-400 text-center">Cast not yet announced.</p>
+          <% end %>
+        <% else %>
+          <p class="px-4 py-6 text-sm text-gray-400 text-center">No active season.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Scoring -->
+    <div>
+      <h2 class="text-xl font-semibold text-gray-800 mb-4">Scoring</h2>
+      <div class="bg-white rounded-lg shadow overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Action</th>
+              <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase">Pts</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100">
+            <%
+              notes = {
+                "voted_out_with_idol" => "Stacks with Voted Out (-5 total)",
+                "quote_of_week"       => "First person to say the quote used as the episode title",
+                "survivor_record"     => "Must be a record Jeff announces",
+                "potw_top3"           => "r/survivor subreddit Player of the Week — top 3 vote-getters",
+                "ftc_won_fire"        => "Equivalent to winning immunity",
+                "ftc_lost_fire"       => "Equivalent to being voted out",
+                "ftc_brought"         => "Equivalent to being taken on reward",
+                "ftc_winner"          => "+1 for right side of vote, +1 for surviving Final Tribal",
+                "ftc_survived_final5" => "Awarded to players who survive the Final 5",
+              }
+            %>
+            <% @event_types.each do |et| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-4 py-2 text-sm text-gray-700">
+                  <%= et.label %>
+                  <% if notes[et.key] %>
+                    <span class="block text-xs text-gray-400"><%= notes[et.key] %></span>
+                  <% end %>
+                </td>
+                <td class="px-4 py-2 text-sm text-center font-semibold <%= et.points >= 0 ? 'text-green-700' : 'text-red-600' %>">
+                  <%= et.points_display %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+</div>

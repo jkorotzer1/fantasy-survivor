@@ -1,0 +1,58 @@
+<% active_season = Season.active.first %>
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Users</h1>
+</div>
+
+<div class="bg-white shadow rounded-lg overflow-hidden">
+  <div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Email</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Role</th>
+        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Seasons</th>
+        <% if active_season %>
+          <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase"><%= active_season.name %></th>
+        <% end %>
+        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200">
+      <% @users.each do |user| %>
+        <% enrolled = active_season && user.participations.any? { |p| p.season_id == active_season.id } %>
+        <tr>
+          <td class="px-6 py-4 text-sm font-medium text-gray-900"><%= user.display_name %></td>
+          <td class="px-6 py-4 text-sm text-gray-600"><%= user.email %></td>
+          <td class="px-6 py-4">
+            <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium
+              <%= user.admin? ? 'bg-purple-100 text-purple-800' : 'bg-gray-100 text-gray-600' %>">
+              <%= user.role.capitalize %>
+            </span>
+          </td>
+          <td class="px-6 py-4 text-sm text-gray-600"><%= user.participations.count %></td>
+          <% if active_season %>
+            <td class="px-6 py-4 text-sm">
+              <% if enrolled %>
+                <span class="text-green-600 font-medium">✓ Enrolled</span>
+              <% else %>
+                <%= button_to "Enroll",
+                    admin_participations_path(user_id: user.id, season_id: active_season.id),
+                    method: :post,
+                    class: "bg-blue-100 text-blue-800 px-3 py-1 rounded text-xs font-medium hover:bg-blue-200" %>
+              <% end %>
+            </td>
+          <% end %>
+          <td class="px-6 py-4 text-right text-sm space-x-2">
+            <%= link_to "View", admin_user_path(user), class: "text-blue-600 hover:text-blue-500" %>
+            <%= button_to user.admin? ? "Make Player" : "Make Admin",
+                toggle_role_admin_user_path(user), method: :patch,
+                class: "text-purple-600 hover:text-purple-500 text-xs" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  </div>
+</div>

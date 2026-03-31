@@ -1,0 +1,12 @@
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-bold text-gray-900">Add Week — <%= @season.name %></h1>
+  <%= link_to "Cancel", admin_season_weeks_path(@season), class: "text-gray-500 text-sm" %>
+</div>
+<div class="bg-white shadow rounded-lg p-6 max-w-md">
+  <%= form_with model: [:admin, @season, @week] do |f| %>
+    <%= render "form", f: f, week: @week %>
+    <div class="mt-6">
+      <%= f.submit "Create Week", class: "bg-green-700 text-white px-6 py-2 rounded font-medium hover:bg-green-600 cursor-pointer" %>
+    </div>
+  <% end %>
+</div>

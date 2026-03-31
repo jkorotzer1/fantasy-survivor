@@ -1,0 +1,15 @@
+class User < ApplicationRecord
+  devise :database_authenticatable, :registerable,
+         :recoverable, :rememberable, :validatable
+
+  enum role: { player: 0, admin: 1 }
+
+  has_many :participations, dependent: :destroy
+  has_many :seasons, through: :participations
+
+  validates :name, presence: true, length: { maximum: 100 }
+
+  def display_name
+    name.presence || email
+  end
+end

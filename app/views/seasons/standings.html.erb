@@ -1,0 +1,87 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-3xl font-bold text-gray-900">Standings</h1>
+    <p class="text-gray-500"><%= @season.name %></p>
+  </div>
+  <div class="flex gap-3">
+    <%= link_to "Score Board", scores_season_path(@season), class: "bg-green-800 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700" %>
+    <%= link_to "← Season", season_path(@season), class: "text-green-700 hover:text-green-600 text-sm font-medium" %>
+  </div>
+</div>
+
+<div class="bg-white shadow rounded-lg overflow-hidden">
+  <div class="overflow-x-auto">
+  <table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+      <tr>
+        <th class="px-3 py-3 sm:px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+        <th class="px-3 py-3 sm:px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Player</th>
+        <th class="px-3 py-3 sm:px-6 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Points</th>
+        <th class="px-3 py-3 sm:px-6 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Winner Pick</th>
+        <th class="px-3 py-3 sm:px-6 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Pick Pts</th>
+      </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+      <%
+        if @standings.any?
+          unique_scores = @standings.map { |r| r[:total] }.uniq.sort.reverse
+          score_emoji = {}
+          unique_scores.each_with_index { |s, i| score_emoji[s] = ['🥇','🥈','🥉'][i] if i < 3 }
+          score_emoji[unique_scores.last] ||= '🍅'
+        end
+      %>
+      <% @standings.each_with_index do |row, idx| %>
+        <tr class="<%= idx.even? ? '' : 'bg-gray-50' %> <%= current_user && row[:user] == current_user ? 'bg-yellow-50 font-semibold' : '' %>">
+          <td class="px-3 py-3 sm:px-6 sm:py-4 text-sm text-gray-900">
+            <%= idx + 1 %><%= score_emoji[row[:total]] %>
+          </td>
+          <td class="px-3 py-3 sm:px-6 sm:py-4 text-sm text-gray-900"><%= row[:user].display_name %></td>
+          <td class="px-3 py-3 sm:px-6 sm:py-4 text-sm text-gray-900 text-right font-bold text-lg"><%= row[:total] %></td>
+          <% wp = row[:participation].winner_picks.first %>
+          <td class="px-3 py-3 sm:px-6 sm:py-4 text-sm text-gray-600 text-right">
+            <% if wp %>
+              <%= wp.contestant.name %>
+              <span class="block text-xs text-gray-400">(+<%= wp.points_if_correct %> if correct)</span>
+            <% else %>
+              —
+            <% end %>
+          </td>
+          <td class="px-3 py-3 sm:px-6 sm:py-4 text-sm text-gray-600 text-right"><%= ScoreCalculator.winner_pick_score(row[:participation]) %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+  </div>
+
+  <% if @standings.empty? %>
+    <div class="text-center py-12 text-gray-500">
+      <p>No players have joined this season yet.</p>
+    </div>
+  <% end %>
+</div>
+
+<div class="bg-white shadow rounded-lg p-6 mt-6">
+  <h2 class="text-lg font-semibold text-gray-800 mb-4">Current Payouts</h2>
+  <% if @payouts[:paid_count] == 0 %>
+    <p class="text-sm text-gray-400">No players have joined yet.</p>
+  <% else %>
+    <div class="grid grid-cols-3 gap-4 text-center">
+      <div class="bg-yellow-50 rounded-lg p-3 sm:p-4">
+        <div class="text-2xl mb-1">🥇</div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">1st Place</div>
+        <div class="text-2xl font-bold text-yellow-700">$<%= @payouts[:first] %></div>
+      </div>
+      <div class="bg-gray-50 rounded-lg p-3 sm:p-4">
+        <div class="text-2xl mb-1">🥈</div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">2nd Place</div>
+        <div class="text-2xl font-bold text-gray-600">$<%= @payouts[:second] %></div>
+      </div>
+      <div class="bg-orange-50 rounded-lg p-3 sm:p-4">
+        <div class="text-2xl mb-1">🥉</div>
+        <div class="text-xs text-gray-500 uppercase font-medium mb-1">3rd Place</div>
+        <div class="text-2xl font-bold text-orange-700">$<%= @payouts[:third] %></div>
+      </div>
+    </div>
+    <p class="text-xs text-gray-400 mt-4 text-center">Based on <%= @payouts[:paid_count] %> <%= 'player'.pluralize(@payouts[:paid_count]) %>. Rounded to nearest $5.</p>
+  <% end %>
+</div>

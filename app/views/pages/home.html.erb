@@ -1,0 +1,51 @@
+<div class="text-center py-12">
+  <h1 class="text-4xl font-bold text-gray-900 mb-4">🌴 Fantasy Survivor</h1>
+  <p class="text-xl text-gray-600 mb-8">Pick your players. Score points. Outwit, Outplay, Outlast.</p>
+
+  <% unless user_signed_in? %>
+    <div class="flex justify-center gap-4 mb-12">
+      <%= link_to "Sign Up to Play", new_user_registration_path,
+          class: "bg-green-700 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-600" %>
+      <%= link_to "Sign In", new_user_session_path,
+          class: "border border-green-700 text-green-700 px-6 py-3 rounded-lg font-semibold hover:bg-green-50" %>
+    </div>
+  <% end %>
+</div>
+
+<% if @active_seasons.any? %>
+  <section class="mb-10">
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Active Seasons</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <% @active_seasons.each do |season| %>
+        <div class="bg-white rounded-lg shadow p-6">
+          <h3 class="text-lg font-bold text-gray-900"><%= season.name %></h3>
+          <p class="text-gray-500 text-sm mb-4">Season <%= season.number %> · <%= season.year %></p>
+          <p class="text-gray-600 text-sm mb-4">Buy-in: $<%= format("%.2f", season.buy_in_dollars) %></p>
+          <%= link_to "View Season", season_path(season),
+              class: "bg-green-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-600" %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<% if @upcoming_seasons.any? %>
+  <section>
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Upcoming Seasons</h2>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <% @upcoming_seasons.each do |season| %>
+        <div class="bg-white rounded-lg shadow p-6 opacity-75">
+          <h3 class="text-lg font-bold text-gray-900"><%= season.name %></h3>
+          <p class="text-gray-500 text-sm">Season <%= season.number %> · <%= season.year %></p>
+          <span class="inline-block mt-3 bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded">Coming Soon</span>
+        </div>
+      <% end %>
+    </div>
+  </section>
+<% end %>
+
+<% if @active_seasons.empty? && @upcoming_seasons.empty? %>
+  <div class="text-center py-16 text-gray-500">
+    <p class="text-lg">No seasons yet. Check back soon!</p>
+  </div>
+<% end %>

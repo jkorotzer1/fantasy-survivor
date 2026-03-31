@@ -1,0 +1,194 @@
+<%
+  tribe_colors = {
+    "vatu" => { dot: "bg-purple-500", btn: "border-purple-300 text-purple-700 hover:bg-purple-50" },
+    "cila" => { dot: "bg-orange-500", btn: "border-orange-300 text-orange-700 hover:bg-orange-50" },
+    "calo" => { dot: "bg-teal-500",   btn: "border-teal-300   text-teal-700   hover:bg-teal-50"   },
+  }
+  tribes = @contestants.map(&:tribe).compact.uniq.sort
+%>
+
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Scoring Events — Week <%= @week.number %></h1>
+    <p class="text-gray-500"><%= @season.name %><% if @week.air_date %> · <%= @week.air_date.strftime("%B %d, %Y") %><% end %></p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "← Weeks", admin_season_weeks_path(@season), class: "text-gray-500 text-sm" %>
+    <% unless @week.scored? %>
+      <%= button_to "Mark Week Scored", mark_scored_admin_season_week_path(@season, @week),
+          method: :patch,
+          class: "bg-green-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-600" %>
+    <% else %>
+      <span class="bg-green-100 text-green-800 px-4 py-2 rounded text-sm font-medium">✓ Scored</span>
+    <% end %>
+  </div>
+</div>
+
+<!-- Bulk Add Form -->
+<div class="bg-white shadow rounded-lg p-5 mb-4">
+  <h2 class="font-semibold text-gray-800 mb-4">Bulk Add Event</h2>
+  <%= form_with url: bulk_create_admin_season_week_scoring_events_path(@season, @week), method: :post do |f| %>
+    <div class="mb-4">
+      <div class="flex items-center justify-between mb-2">
+        <span class="text-xs font-medium text-gray-700">Events</span>
+        <div class="flex gap-3">
+          <button type="button"
+                  onclick="document.querySelectorAll('.bulk-event-cb').forEach(cb => cb.checked = true)"
+                  class="text-xs text-gray-500 hover:text-gray-700 font-medium">Select All</button>
+          <button type="button"
+                  onclick="document.querySelectorAll('.bulk-event-cb').forEach(cb => cb.checked = false)"
+                  class="text-xs text-red-500 hover:text-red-700 font-medium">Unselect All</button>
+        </div>
+      </div>
+      <div class="border border-gray-200 rounded p-3 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <% @event_types.each do |t| %>
+          <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5">
+            <input type="checkbox" name="event_types[]" value="<%= t.key %>"
+                   class="bulk-event-cb rounded border-gray-300">
+            <span class="text-sm text-gray-800"><%= t.label %> <span class="text-gray-400">(<%= t.points_display %>)</span></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+    <div class="flex justify-end mb-4">
+      <%= f.submit "Add for Selected", class: "bg-green-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-600 cursor-pointer whitespace-nowrap" %>
+    </div>
+
+    <div class="border border-gray-200 rounded p-3">
+      <div class="flex flex-wrap items-center gap-3 mb-3 pb-2 border-b border-gray-100">
+        <!-- select all / unselect all -->
+        <div class="flex items-center gap-2">
+          <input type="checkbox" id="select_all_bulk"
+                 onchange="document.querySelectorAll('.bulk-contestant-cb').forEach(cb => cb.checked = this.checked)"
+                 class="rounded border-gray-300">
+          <label for="select_all_bulk" class="text-xs font-medium text-gray-600 cursor-pointer">All</label>
+        </div>
+        <button type="button"
+                onclick="document.querySelectorAll('.bulk-contestant-cb').forEach(cb => cb.checked = false); document.getElementById('select_all_bulk').checked = false"
+                class="text-xs text-red-500 hover:text-red-700 font-medium">None</button>
+
+        <!-- tribe quick-select buttons -->
+        <% if tribes.any? %>
+          <span class="text-xs text-gray-300">|</span>
+          <% tribes.each do |tribe| %>
+            <% colors = tribe_colors[tribe] %>
+            <button type="button"
+                    onclick="document.querySelectorAll('.bulk-contestant-cb').forEach(cb => cb.checked = cb.dataset.tribe === '<%= tribe %>' && cb.dataset.active === 'true'); document.getElementById('select_all_bulk').checked = false"
+                    class="flex items-center gap-1.5 px-2 py-0.5 rounded border text-xs font-medium <%= colors ? colors[:btn] : 'border-gray-300 text-gray-600 hover:bg-gray-50' %>">
+              <% if colors %>
+                <span class="inline-block w-2 h-2 rounded-full <%= colors[:dot] %>"></span>
+              <% end %>
+              <%= tribe.capitalize %>
+            </button>
+          <% end %>
+        <% end %>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
+        <% @contestants.each do |contestant| %>
+          <% colors = tribe_colors[contestant.tribe] %>
+          <label class="flex items-center gap-2 cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5">
+            <input type="checkbox" name="contestant_ids[]" value="<%= contestant.id %>"
+                   class="bulk-contestant-cb rounded border-gray-300"
+                   data-tribe="<%= contestant.tribe %>"
+                   data-active="<%= contestant.active? %>"
+                   <%= "checked" if contestant.active? %>>
+            <% if colors %>
+              <span class="inline-block w-2 h-2 rounded-full shrink-0 <%= colors[:dot] %>"></span>
+            <% end %>
+            <span class="text-sm <%= contestant.active? ? 'text-gray-800' : 'text-gray-400 line-through' %>">
+              <%= contestant.name %>
+            </span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<!-- Add Event Form -->
+<div class="bg-white shadow rounded-lg p-5 mb-6">
+  <h2 class="font-semibold text-gray-800 mb-4">Add Event</h2>
+  <%= form_with model: @new_event, url: admin_season_week_scoring_events_path(@season, @week) do |f| %>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <%= f.label :contestant_id, "Contestant", class: "block text-xs font-medium text-gray-700 mb-1" %>
+        <%= f.select :contestant_id,
+            @contestants.map { |c| [c.name, c.id] },
+            { prompt: "Select contestant..." },
+            class: "block w-full rounded border-gray-300 shadow-sm text-sm" %>
+      </div>
+      <div>
+        <%= f.label :event_type, "Event", class: "block text-xs font-medium text-gray-700 mb-1" %>
+        <%= f.select :event_type,
+            @event_types.map { |t| ["#{t.label} (#{t.points_display})", t.key] },
+            { prompt: "Select event..." },
+            class: "block w-full rounded border-gray-300 shadow-sm text-sm" %>
+      </div>
+      <div>
+        <%= f.label :notes, "Notes (optional)", class: "block text-xs font-medium text-gray-700 mb-1" %>
+        <%= f.text_field :notes, class: "block w-full rounded border-gray-300 shadow-sm text-sm" %>
+      </div>
+    </div>
+    <div class="mt-4">
+      <%= f.submit "Add Event", class: "bg-green-700 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-600 cursor-pointer" %>
+    </div>
+  <% end %>
+</div>
+
+<!-- Events by Contestant -->
+<div class="space-y-4">
+  <% if @contestants.empty? %>
+    <div class="bg-white shadow rounded-lg p-6 text-gray-500 text-center">
+      No contestants in this season.
+    </div>
+  <% end %>
+
+  <% @contestants.each do |contestant| %>
+    <% events = (@events_by_contestant[contestant.id] || []).sort_by(&:event_type) %>
+    <% week_total = events.sum(&:point_value) %>
+    <% colors = tribe_colors[contestant.tribe] %>
+
+    <div class="bg-white shadow rounded-lg overflow-hidden">
+      <div class="px-5 py-3 bg-gray-50 flex items-center justify-between border-b border-gray-200">
+        <div class="flex items-center gap-3">
+          <% if colors %>
+            <span class="inline-block w-2.5 h-2.5 rounded-full shrink-0 <%= colors[:dot] %>"></span>
+          <% end %>
+          <h3 class="font-semibold text-gray-800"><%= contestant.name %></h3>
+          <span class="text-xs px-2 py-0.5 rounded-full
+            <%= contestant.active? ? 'bg-green-100 text-green-700' : contestant.winner? ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500' %>">
+            <%= contestant.active? ? '🔥' : contestant.winner? ? contestant.status : '💀' %>
+          </span>
+        </div>
+        <span class="font-bold text-lg <%= week_total > 0 ? 'text-green-600' : week_total < 0 ? 'text-red-600' : 'text-gray-400' %>">
+          <%= week_total > 0 ? "+#{week_total}" : week_total %> pts
+        </span>
+      </div>
+
+      <% if events.any? %>
+        <table class="min-w-full divide-y divide-gray-100">
+          <tbody>
+            <% events.each do |event| %>
+              <tr class="hover:bg-gray-50">
+                <td class="px-5 py-2 text-sm text-gray-700"><%= event.label %></td>
+                <td class="px-5 py-2 text-sm <%= event.point_value > 0 ? 'text-green-600' : 'text-red-600' %> font-medium">
+                  <%= event.point_value > 0 ? "+#{event.point_value}" : event.point_value %>
+                </td>
+                <td class="px-5 py-2 text-sm text-gray-400"><%= event.notes %></td>
+                <td class="px-5 py-2 text-right">
+                  <%= button_to "×", admin_season_week_scoring_event_path(@season, @week, event),
+                      method: :delete,
+                      data: { confirm: "Remove this event?" },
+                      class: "text-red-400 hover:text-red-600 text-sm font-bold" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p class="px-5 py-3 text-sm text-gray-400">No events for this contestant.</p>
+      <% end %>
+    </div>
+  <% end %>
+</div>

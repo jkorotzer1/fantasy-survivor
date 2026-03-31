@@ -1,0 +1,121 @@
+@import "tailwindcss";
+
+/* ─── Dark Mode ──────────────────────────────────────────────────────────── */
+
+html.dark {
+  background-color: #0e1b0e;
+}
+
+html.dark body {
+  background-color: #0e1b0e;
+  color: #cce0cc;
+}
+
+/* Nav */
+html.dark nav.bg-green-800 {
+  background-color: #0a160a !important;
+}
+
+/* ── Backgrounds ── */
+
+html.dark .bg-white {
+  background-color: #172517 !important;
+}
+
+html.dark .bg-gray-50 {
+  background-color: #1c2e1c !important;
+}
+
+html.dark .bg-gray-100 {
+  background-color: #1f2f1f !important;
+}
+
+html.dark .bg-gray-200 {
+  background-color: #243824 !important;
+}
+
+/* Yellow / winner-pick prompt */
+html.dark .bg-yellow-50 {
+  background-color: #1c1c08 !important;
+}
+
+/* Flash messages */
+html.dark .bg-green-100 {
+  background-color: #13251a !important;
+}
+
+html.dark .bg-red-100 {
+  background-color: #2a1212 !important;
+}
+
+/* ── Text ── */
+
+html.dark .text-gray-900 { color: #e2ede2 !important; }
+html.dark .text-gray-800 { color: #cce0cc !important; }
+html.dark .text-gray-700 { color: #adc9ad !important; }
+html.dark .text-gray-600 { color: #88a888 !important; }
+html.dark .text-gray-500 { color: #6a8a6a !important; }
+html.dark .text-gray-400 { color: #4e6e4e !important; }
+html.dark .text-gray-300 { color: #3a5a3a !important; }
+html.dark .text-gray-200 { color: #2c462c !important; }
+
+/* Semantic score/status colors — brighten for dark backgrounds */
+html.dark .text-green-700 { color: #4ade80 !important; }
+html.dark .text-green-600 { color: #6bdf88 !important; }
+html.dark .text-red-600   { color: #f87171 !important; }
+html.dark .text-red-500   { color: #fb9090 !important; }
+
+/* Flash text */
+html.dark .text-green-800 { color: #6dda6d !important; }
+html.dark .text-red-800   { color: #f87171 !important; }
+
+/* Yellow text (winner prompt, winner status) */
+html.dark .text-yellow-800 { color: #fbbf24 !important; }
+html.dark .text-yellow-600 { color: #fbbf24 !important; }
+
+/* ── Borders ── */
+
+html.dark .border-gray-200  { border-color: #2a3d2a !important; }
+html.dark .border-gray-100  { border-color: #233323 !important; }
+html.dark .border-gray-300  { border-color: #2a3d2a !important; }
+html.dark .border-green-300 { border-color: #2a5a2a !important; }
+html.dark .border-red-300   { border-color: #5a2a2a !important; }
+html.dark .border-yellow-200 { border-color: #3d3808 !important; }
+
+/* Dividers (divide-y utilities) */
+html.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #2a3d2a !important;
+}
+html.dark .divide-gray-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #233323 !important;
+}
+
+/* ── Hover rows ── */
+
+html.dark tr:hover {
+  background-color: #243824 !important;
+}
+
+/* ── Shadows ── */
+
+html.dark .shadow {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.6), 0 1px 2px rgba(0,0,0,0.4) !important;
+}
+
+/* ── Form inputs / selects ── */
+
+html.dark input,
+html.dark select,
+html.dark textarea {
+  background-color: #1c2e1c !important;
+  color: #cce0cc !important;
+  border-color: #2a3d2a !important;
+}
+
+/* ── Misc ── */
+
+/* Cursor-not-allowed "Registration Closed" pill */
+html.dark .bg-gray-200.text-gray-500 {
+  background-color: #1f2f1f !important;
+  color: #6a8a6a !important;
+}

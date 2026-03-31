@@ -1,0 +1,79 @@
+<div class="mb-8">
+  <h1 class="text-3xl font-bold text-gray-900 mb-1">Message Board</h1>
+  <p class="text-gray-500 text-sm">Chat, discuss, and share picks with your league.</p>
+</div>
+
+<%# New post form %>
+<% if user_signed_in? %>
+  <div class="bg-white rounded-lg shadow p-6 mb-8">
+    <%= form_with model: Message.new, local: true do |f| %>
+      <div class="mb-3">
+        <%= f.text_area :body, placeholder: "What's on your mind?", rows: 3,
+            class: "w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" %>
+      </div>
+
+      <div class="mb-3">
+        <label class="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer">
+          <%= f.check_box :anonymous, class: "accent-green-600" %>
+          Post anonymously
+        </label>
+      </div>
+
+      <%# Poll options — collapsible via native <details> %>
+      <details class="mb-4">
+        <summary class="text-sm text-gray-600 cursor-pointer">Add a poll</summary>
+        <div class="mt-2 space-y-2">
+          <p class="text-xs text-gray-500 font-medium uppercase tracking-wide">Poll options (leave blank to skip)</p>
+          <%= f.fields_for :poll_options, Array.new(4) { PollOption.new } do |pf| %>
+            <%= pf.text_field :label, placeholder: "Option",
+                class: "w-full border border-gray-300 rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-green-500" %>
+          <% end %>
+        </div>
+      </details>
+
+      <div class="flex justify-end">
+        <%= f.submit "Post", class: "bg-green-700 text-white px-5 py-2 rounded text-sm font-medium hover:bg-green-600 cursor-pointer" %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <p class="text-gray-500 text-sm mb-8">
+    <%= link_to "Sign in", new_user_session_path, class: "text-green-700 underline font-medium" %>
+    to post on the message board.
+  </p>
+<% end %>
+
+<%# Pinned posts %>
+<% if @pinned_messages.any? %>
+  <div class="mb-6 space-y-4">
+    <% @pinned_messages.each do |message| %>
+      <%= render partial: "pages/message", locals: { message: message } %>
+    <% end %>
+  </div>
+<% end %>
+
+<%# Regular posts %>
+<% if @messages.any? %>
+  <div class="space-y-4">
+    <% @messages.each do |message| %>
+      <%= render partial: "pages/message", locals: { message: message } %>
+    <% end %>
+  </div>
+<% elsif @pinned_messages.empty? %>
+  <div class="text-center py-16 text-gray-400">
+    <p class="text-lg">No posts yet. Be the first to say something!</p>
+  </div>
+<% end %>
+
+<%# Pagination %>
+<% if @pagy.pages > 1 %>
+  <div class="flex justify-center items-center gap-6 mt-8 text-sm">
+    <% if @pagy.prev %>
+      <%= link_to "← Newer", board_path(page: @pagy.prev), class: "text-green-700 hover:underline" %>
+    <% end %>
+    <span class="text-gray-500">Page <%= @pagy.page %> of <%= @pagy.pages %></span>
+    <% if @pagy.next %>
+      <%= link_to "Older →", board_path(page: @pagy.next), class: "text-green-700 hover:underline" %>
+    <% end %>
+  </div>
+<% end %>

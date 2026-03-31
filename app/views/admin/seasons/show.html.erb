@@ -1,0 +1,64 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900"><%= @season.name %></h1>
+    <p class="text-gray-500">Season <%= @season.number %> · <%= @season.year %></p>
+  </div>
+  <div class="flex flex-wrap gap-2">
+    <%= link_to "Score Board", scores_admin_season_path(@season), class: "bg-purple-600 text-white px-4 py-2 rounded text-sm hover:bg-purple-500" %>
+    <%= link_to "Edit", edit_admin_season_path(@season), class: "bg-gray-100 text-gray-700 px-4 py-2 rounded text-sm hover:bg-gray-200" %>
+    <% unless @season.active? %>
+      <%= button_to "Activate", activate_admin_season_path(@season), method: :patch,
+          class: "bg-green-700 text-white px-4 py-2 rounded text-sm hover:bg-green-600" %>
+    <% end %>
+    <% unless @season.completed? %>
+      <%= button_to "Mark Complete", complete_admin_season_path(@season), method: :patch,
+          class: "bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-500" %>
+    <% end %>
+  </div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-3 mb-6">
+  <div class="lg:col-span-1">
+    <div class="bg-white shadow rounded-lg p-5">
+      <dl class="space-y-3">
+        <div><dt class="text-xs text-gray-500 uppercase">Status</dt><dd class="font-medium"><%= @season.status.capitalize %></dd></div>
+        <div><dt class="text-xs text-gray-500 uppercase">Buy-in</dt><dd class="font-medium">$<%= format("%.2f", @season.buy_in_dollars) %></dd></div>
+        <div><dt class="text-xs text-gray-500 uppercase">Merge Week</dt><dd class="font-medium"><%= @season.merge_week || "TBD" %></dd></div>
+        <div><dt class="text-xs text-gray-500 uppercase">Players</dt><dd class="font-medium"><%= @season.participations.count %></dd></div>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<div class="grid gap-6 lg:grid-cols-2">
+  <div class="bg-white shadow rounded-lg p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-gray-800">Contestants</h2>
+      <%= link_to "Manage", admin_season_contestants_path(@season), class: "text-blue-600 text-sm" %>
+    </div>
+    <% @season.contestants.order(:name).each do |c| %>
+      <div class="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0 text-sm">
+        <span><%= c.name %></span>
+        <span class="<%= c.active? ? 'text-green-600' : c.winner? ? 'text-yellow-600 font-bold' : 'text-gray-400' %>"><%= c.active? ? '🔥' : c.winner? ? c.status : '💀' %></span>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="bg-white shadow rounded-lg p-5">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-gray-800">Weeks</h2>
+      <%= link_to "Manage", admin_season_weeks_path(@season), class: "text-blue-600 text-sm" %>
+    </div>
+    <% @season.weeks.ordered.each do |week| %>
+      <div class="flex items-center justify-between py-1.5 border-b border-gray-100 last:border-0 text-sm">
+        <span>Week <%= week.number %></span>
+        <div class="flex items-center gap-2">
+          <% if week.scored? %>
+            <span class="text-green-600 text-xs">Scored</span>
+          <% end %>
+          <%= link_to "Events", admin_season_week_scoring_events_path(@season, week), class: "text-blue-600 text-xs" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</div>

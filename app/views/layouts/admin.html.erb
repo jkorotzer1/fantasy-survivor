@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-gray-100">
+  <head>
+    <title>Admin — Fantasy Survivor</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <script>if(localStorage.getItem('darkMode')==='true'){document.documentElement.classList.add('dark')}</script>
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+    <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_importmap_tags %>
+  </head>
+  <body class="h-full">
+    <div class="flex flex-col md:flex-row min-h-full">
+      <!-- Mobile top bar -->
+      <div class="md:hidden bg-gray-900 flex items-center justify-between px-4 h-14 shrink-0">
+        <%= link_to "🌴 FS Admin", admin_root_path, class: "text-white font-bold text-lg" %>
+        <button onclick="document.getElementById('admin-sidebar').classList.toggle('hidden')"
+                class="text-gray-300 hover:text-white focus:outline-none text-2xl leading-none px-1">☰</button>
+      </div>
+
+      <!-- Sidebar -->
+      <div id="admin-sidebar" class="hidden md:flex md:flex-col w-full md:w-56 bg-gray-900 shrink-0">
+        <div class="hidden md:block px-4 py-5">
+          <%= link_to "🌴 FS Admin", admin_root_path, class: "text-white font-bold text-lg" %>
+        </div>
+        <nav class="flex-1 px-2 pb-4 pt-2 md:pt-0 space-y-1">
+          <%= link_to "Dashboard", admin_root_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <%= link_to "Seasons", admin_seasons_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <%= link_to "Users", admin_users_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <%= link_to "Participants", admin_participations_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <%= link_to "Event Types", admin_scoring_event_types_path, class: "text-gray-300 hover:bg-gray-700 hover:text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <hr class="border-gray-700 my-2">
+          <%= link_to "← Public Site", root_path, class: "text-gray-400 hover:text-gray-200 group flex items-center px-2 py-2 text-sm font-medium rounded-md" %>
+          <button onclick="toggleDark()" id="dark-toggle"
+                  class="text-gray-400 hover:text-gray-200 flex items-center px-2 py-2 text-sm font-medium rounded-md w-full text-left"
+                  title="Toggle dark mode">
+            <span id="dark-toggle-label">🌙 Dark Mode</span>
+          </button>
+        </nav>
+      </div>
+
+      <!-- Main content -->
+      <div class="flex-1 flex flex-col min-w-0">
+        <div class="flex-1 p-4 md:p-6">
+          <% flash.each do |type, message| %>
+            <% css_class = type.to_s == "alert" ? "bg-red-100 text-red-800 border-red-300" : "bg-green-100 text-green-800 border-green-300" %>
+            <div class="mb-4 rounded border px-4 py-3 <%= css_class %>">
+              <%= message %>
+            </div>
+          <% end %>
+
+          <%= yield %>
+        </div>
+      </div>
+    </div>
+    <script>
+      function toggleDark() {
+        var dark = document.documentElement.classList.toggle('dark');
+        localStorage.setItem('darkMode', dark);
+        syncDarkIcon();
+      }
+      function syncDarkIcon() {
+        var lbl = document.getElementById('dark-toggle-label');
+        if (lbl) lbl.textContent = document.documentElement.classList.contains('dark') ? '☀️ Light Mode' : '🌙 Dark Mode';
+      }
+      document.addEventListener('turbo:load', syncDarkIcon);
+      syncDarkIcon();
+    </script>
+  </body>
+</html>

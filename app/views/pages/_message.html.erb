@@ -1,0 +1,124 @@
+<div class="bg-white rounded-lg shadow p-5 <%= message.pinned? ? 'border-l-4 border-yellow-400' : '' %>">
+
+  <%# Header: author, timestamp, actions %>
+  <div class="flex justify-between items-start mb-2">
+    <div class="flex items-center gap-2 flex-wrap">
+      <% if message.pinned? %>
+        <span class="text-yellow-600 text-xs font-semibold uppercase tracking-wide">📌 Pinned</span>
+      <% end %>
+      <span class="font-semibold text-gray-800 text-sm"><%= message.author_name %></span>
+      <span class="text-gray-400 text-xs"><%= time_ago_in_words(message.created_at) %> ago</span>
+    </div>
+    <div class="flex items-center gap-3 shrink-0">
+      <% if user_signed_in? && current_user.admin? && message.parent_id.nil? %>
+        <%= button_to message.pinned? ? "Unpin" : "Pin", pin_message_path(message), method: :patch,
+            class: "text-xs text-yellow-600 hover:text-yellow-800 bg-transparent border-0 cursor-pointer p-0" %>
+      <% end %>
+      <% if user_signed_in? && (current_user.admin? || message.user == current_user) %>
+        <%= button_to "Delete", message_path(message), method: :delete,
+            data: { turbo_confirm: "Delete this message?" },
+            class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Body %>
+  <p class="text-gray-700 text-sm mb-3 whitespace-pre-wrap"><%= message.body %></p>
+
+  <%# Poll %>
+  <% if message.poll_options.loaded? ? message.poll_options.any? : message.poll_options.exists? %>
+    <div class="bg-gray-50 rounded-lg p-4 mb-3">
+      <% if user_signed_in? %>
+        <% user_vote = message.poll_options.flat_map(&:poll_votes).find { |v| v.user_id == current_user.id } %>
+        <% if user_vote %>
+          <%# Show results %>
+          <% total = message.poll_votes.size %>
+          <% message.poll_options.each do |option| %>
+            <% votes = option.poll_votes.size %>
+            <% pct = total > 0 ? (votes * 100.0 / total).round : 0 %>
+            <div class="mb-3">
+              <div class="flex justify-between text-sm mb-1">
+                <span class="<%= user_vote.poll_option_id == option.id ? 'font-semibold text-green-700' : 'text-gray-600' %>">
+                  <%= option.label %><%= user_vote.poll_option_id == option.id ? " ✓" : "" %>
+                </span>
+                <span class="text-gray-500 text-xs"><%= votes %> (<%= pct %>%)</span>
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-1.5">
+                <div class="bg-green-600 h-1.5 rounded-full" style="width: <%= pct %>%"></div>
+              </div>
+            </div>
+          <% end %>
+          <p class="text-xs text-gray-400 mt-1"><%= total %> vote<%= total == 1 ? "" : "s" %> total</p>
+        <% else %>
+          <%# Show voting form %>
+          <%= form_with url: poll_votes_path, local: true do |f| %>
+            <div class="space-y-2 mb-3">
+              <% message.poll_options.each do |option| %>
+                <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-green-700">
+                  <%= radio_button_tag "poll_vote[poll_option_id]", option.id, false,
+                      id: "option_#{option.id}", class: "accent-green-600" %>
+                  <span><%= option.label %></span>
+                </label>
+              <% end %>
+            </div>
+            <%= f.submit "Vote", class: "bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-green-600 cursor-pointer" %>
+          <% end %>
+        <% end %>
+      <% else %>
+        <%# Not signed in — show options only %>
+        <% message.poll_options.each do |option| %>
+          <div class="mb-2 text-sm text-gray-600 border border-gray-200 rounded px-3 py-2"><%= option.label %></div>
+        <% end %>
+        <p class="text-xs text-gray-400 mt-2">
+          <%= link_to "Sign in", new_user_session_path, class: "text-green-700 underline" %> to vote
+        </p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Replies %>
+  <% loaded_replies = message.replies.loaded? ? message.replies.sort_by(&:created_at) : message.replies.order(:created_at) %>
+  <% if loaded_replies.any? %>
+    <div class="mt-3 ml-4 space-y-3 border-l-2 border-gray-100 pl-4">
+      <% loaded_replies.each do |reply| %>
+        <div class="text-sm">
+          <div class="flex justify-between items-center mb-1">
+            <div class="flex items-center gap-2">
+              <span class="font-semibold text-gray-800"><%= reply.author_name %></span>
+              <span class="text-gray-400 text-xs"><%= time_ago_in_words(reply.created_at) %> ago</span>
+            </div>
+            <% if user_signed_in? && (current_user.admin? || reply.user == current_user) %>
+              <%= button_to "Delete", message_path(reply), method: :delete,
+                  data: { turbo_confirm: "Delete this reply?" },
+                  class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0" %>
+            <% end %>
+          </div>
+          <p class="text-gray-700 whitespace-pre-wrap"><%= reply.body %></p>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Reply toggle + inline form %>
+  <% if user_signed_in? %>
+    <details class="mt-3">
+      <summary class="text-xs text-green-700 hover:text-green-900 font-medium cursor-pointer list-none">Reply</summary>
+      <div class="mt-3">
+        <%= form_with model: Message.new, local: true do |f| %>
+          <%= f.hidden_field :parent_id, value: message.id %>
+          <div class="mb-2">
+            <%= f.text_area :body, placeholder: "Write a reply...", rows: 2,
+                class: "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" %>
+          </div>
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+              <%= f.check_box :anonymous, class: "accent-green-600" %>
+              Post anonymously
+            </label>
+            <%= f.submit "Reply", class: "bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-green-600 cursor-pointer" %>
+          </div>
+        <% end %>
+      </div>
+    </details>
+  <% end %>
+</div>

@@ -1,0 +1,121 @@
+<div class="flex items-center justify-between mb-6">
+  <div>
+    <h1 class="text-2xl font-bold text-gray-900">Score Board — <%= @season.name %></h1>
+    <p class="text-gray-500">Live scoring by week</p>
+  </div>
+  <%= link_to "← Season", season_path(@season), class: "text-gray-500 text-sm" %>
+</div>
+
+<%# ─── Matrix 1: Player picks by week ───────────────────────────────────── %>
+<div class="bg-white shadow rounded-lg overflow-hidden mb-8">
+  <div class="px-5 py-4 border-b border-gray-200">
+    <h2 class="text-lg font-semibold text-gray-900">Player Picks by Week</h2>
+    <p class="text-xs text-gray-500 mt-0.5">Who each player picked and what they scored that week.</p>
+  </div>
+  <% if @participations.empty? %>
+    <p class="px-5 py-6 text-gray-400 text-sm">No players have joined this season yet.</p>
+  <% else %>
+    <div class="overflow-x-auto">
+      <table class="min-w-full text-sm">
+        <thead>
+          <tr class="bg-gray-50 border-b border-gray-200">
+            <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 min-w-[140px]">Player</th>
+            <th class="px-4 py-3 text-center font-bold text-gray-800 min-w-[70px] bg-gray-100">Total</th>
+            <% @weeks.each do |week| %>
+              <th class="px-3 py-3 text-center font-medium min-w-[90px]
+                <%= week.scored? ? 'text-green-700' : 'text-gray-500' %>">
+                Wk <%= week.number %>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          <%
+            sorted_players = @user_week_data.values.sort_by do |row|
+              -(row[:weeks].values.sum { |w| w[:score] })
+            end
+          %>
+          <% sorted_players.each_with_index do |row, idx| %>
+            <% week_total = row[:weeks].values.sum { |w| w[:score] } %>
+            <tr class="<%= idx.even? ? 'bg-white' : 'bg-gray-50' %> hover:bg-blue-50">
+              <td class="px-4 py-2.5 font-medium text-gray-800 sticky left-0 <%= idx.even? ? 'bg-white' : 'bg-gray-50' %> z-10">
+                <%= row[:user].display_name %>
+              </td>
+              <td class="px-4 py-2.5 text-center font-bold tabular-nums bg-gray-100
+                <%= week_total > 0 ? 'text-green-700' : week_total < 0 ? 'text-red-600' : 'text-gray-400' %>">
+                <%= week_total > 0 ? "+#{week_total}" : week_total %>
+              </td>
+              <% @weeks.each do |week| %>
+                <% pick = row[:weeks][week.id] %>
+                <td class="px-3 py-2.5 text-center">
+                  <% if pick %>
+                    <div class="text-xs text-gray-600 font-medium"><%= pick[:name] %></div>
+                    <div class="tabular-nums font-semibold
+                      <%= pick[:score] > 0 ? 'text-green-700' : pick[:score] < 0 ? 'text-red-600' : 'text-gray-400' %>">
+                      <%= pick[:score] > 0 ? "+#{pick[:score]}" : pick[:score] == 0 ? "0" : pick[:score] %>
+                    </div>
+                  <% else %>
+                    <span class="text-gray-300 text-xs">—</span>
+                  <% end %>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% end %>
+</div>
+
+<%# ─── Matrix 2: Contestant scores by week ───────────────────────────────── %>
+<div class="bg-white shadow rounded-lg overflow-hidden">
+  <div class="px-5 py-4 border-b border-gray-200">
+    <h2 class="text-lg font-semibold text-gray-900">Contestant Scores by Week</h2>
+    <p class="text-xs text-gray-500 mt-0.5">Points earned per week. Weeks with no events yet show —.</p>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr class="bg-gray-50 border-b border-gray-200">
+          <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50 z-10 min-w-[120px]">Contestant</th>
+          <% @weeks.each do |week| %>
+            <th class="px-3 py-3 text-center font-medium min-w-[60px]
+              <%= week.scored? ? 'text-green-700' : 'text-gray-400' %>">
+              Wk <%= week.number %><% if week.scored? %> ✓<% end %>
+            </th>
+          <% end %>
+          <th class="px-4 py-3 text-center font-bold text-gray-800 min-w-[70px] bg-gray-100">Total</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-100">
+        <%
+          sorted_contestants = @contestants.sort_by { |c| -@contestant_totals[c.id].to_i }
+        %>
+        <% sorted_contestants.each_with_index do |c, idx| %>
+          <% total = @contestant_totals[c.id] %>
+          <tr class="<%= idx.even? ? 'bg-white' : 'bg-gray-50' %> hover:bg-blue-50">
+            <td class="px-4 py-2.5 font-medium text-gray-800 sticky left-0 <%= idx.even? ? 'bg-white' : 'bg-gray-50' %> z-10">
+              <%= c.name %>
+              <% unless c.active? %>
+                <span class="ml-1 text-xs <%= c.winner? ? 'text-yellow-600' : 'text-gray-400' %>">
+                  <%= c.winner? ? "(#{c.status})" : '💀' %>
+                </span>
+              <% end %>
+            </td>
+            <% @weeks.each do |week| %>
+              <% pts = @contestant_week_scores[c.id][week.id] %>
+              <td class="px-3 py-2.5 text-center tabular-nums
+                <%= pts > 0 ? 'text-green-700' : pts < 0 ? 'text-red-600' : 'text-gray-300' %>">
+                <%= pts > 0 ? "+#{pts}" : pts == 0 ? "—" : pts %>
+              </td>
+            <% end %>
+            <td class="px-4 py-2.5 text-center font-bold tabular-nums bg-gray-100
+              <%= total > 0 ? 'text-green-700' : total < 0 ? 'text-red-600' : 'text-gray-400' %>">
+              <%= total > 0 ? "+#{total}" : total %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
