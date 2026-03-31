@@ -5,7 +5,7 @@ class WeeklyPicksController < ApplicationController
 
   def new
     @pick = @participation.weekly_picks.find_by(week: @week) || WeeklyPick.new
-    @available_contestants = available_contestants
+    set_contestant_lists
     authorize @pick
   end
 
@@ -16,7 +16,7 @@ class WeeklyPicksController < ApplicationController
     if @pick.save
       redirect_to season_week_path(@season, @week), notice: "Pick saved!"
     else
-      @available_contestants = available_contestants
+      set_contestant_lists
       render :new, status: :unprocessable_entity
     end
   end
@@ -28,7 +28,7 @@ class WeeklyPicksController < ApplicationController
     if @pick.update(weekly_pick_params)
       redirect_to season_week_path(@season, @week), notice: "Pick updated!"
     else
-      @available_contestants = available_contestants
+      set_contestant_lists
       render :new, status: :unprocessable_entity
     end
   end
@@ -62,17 +62,17 @@ class WeeklyPicksController < ApplicationController
     params.require(:weekly_pick).permit(:contestant_id)
   end
 
-  def available_contestants
-    # When editing an existing pick, don't count that pick toward the twice-limit
-    if @pick&.persisted?
-      used_twice = @participation.weekly_picks
-                                 .where.not(id: @pick.id)
-                                 .group(:contestant_id)
-                                 .having("COUNT(*) >= #{Participation::MAX_PICKS_PER_CONTESTANT}")
-                                 .pluck(:contestant_id)
+  def set_contestant_lists
+    used_twice = if @pick&.persisted?
+      @participation.weekly_picks
+                    .where.not(id: @pick.id)
+                    .group(:contestant_id)
+                    .having("COUNT(*) >= #{Participation::MAX_PICKS_PER_CONTESTANT}")
+                    .pluck(:contestant_id)
     else
-      used_twice = @participation.contestants_used_twice
+      @participation.contestants_used_twice
     end
-    @season.contestants.active.where.not(id: used_twice)
+    @available_contestants = @season.contestants.active.order(:name)
+    @maxed_contestant_ids  = used_twice.to_set
   end
 end
