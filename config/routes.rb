@@ -5,6 +5,7 @@ Rails.application.routes.draw do
 
   resources :messages, only: [:create, :destroy] do
     member { patch :pin }
+    resources :likes, only: [:create, :destroy]
   end
   resources :poll_votes, only: [:create]
   devise_for :users

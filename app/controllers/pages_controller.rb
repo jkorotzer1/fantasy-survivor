@@ -10,10 +10,10 @@ class PagesController < ApplicationController
     current_user.update_column(:last_board_visit_at, Time.current) if user_signed_in?
     @board_has_new = false
     @pinned_messages = Message.top_level.pinned
-      .includes(:user, replies: :user, poll_options: :poll_votes)
+      .includes(:user, :likes, replies: [:user, :likes], poll_options: :poll_votes)
     @pagy, @messages = pagy(
       Message.top_level.not_pinned.chronological
-        .includes(:user, replies: :user, poll_options: :poll_votes),
+        .includes(:user, :likes, replies: [:user, :likes], poll_options: :poll_votes),
       items: 10
     )
   end

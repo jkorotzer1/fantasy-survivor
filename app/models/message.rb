@@ -4,6 +4,7 @@ class Message < ApplicationRecord
   has_many :replies, class_name: "Message", foreign_key: :parent_id, dependent: :destroy
   has_many :poll_options, dependent: :destroy
   has_many :poll_votes, through: :poll_options
+  has_many :likes, dependent: :destroy
 
   accepts_nested_attributes_for :poll_options, reject_if: :all_blank
 

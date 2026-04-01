@@ -81,17 +81,34 @@
   <% if loaded_replies.any? %>
     <div class="mt-3 ml-4 space-y-3 border-l-2 border-gray-100 pl-4">
       <% loaded_replies.each do |reply| %>
+        <% user_liked_reply = user_signed_in? && reply.likes.any? { |l| l.user_id == current_user.id } %>
         <div class="text-sm">
           <div class="flex justify-between items-center mb-1">
             <div class="flex items-center gap-2">
               <span class="font-semibold text-gray-800"><%= reply.author_name %></span>
               <span class="text-gray-400 text-xs"><%= time_ago_in_words(reply.created_at) %> ago</span>
             </div>
-            <% if user_signed_in? && (current_user.admin? || reply.user == current_user) %>
-              <%= button_to "Delete", message_path(reply), method: :delete,
-                  data: { turbo_confirm: "Delete this reply?" },
-                  class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0" %>
-            <% end %>
+            <div class="flex items-center gap-3">
+              <%# Like button for reply %>
+              <% if user_signed_in? %>
+                <% if user_liked_reply %>
+                  <%= button_to "♥ #{reply.likes.size}", message_like_path(reply, reply.likes.find { |l| l.user_id == current_user.id }),
+                      method: :delete,
+                      class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0 font-medium" %>
+                <% else %>
+                  <%= button_to "♡#{reply.likes.size > 0 ? " #{reply.likes.size}" : ""}", message_likes_path(reply),
+                      method: :post,
+                      class: "text-xs text-gray-400 hover:text-red-500 bg-transparent border-0 cursor-pointer p-0" %>
+                <% end %>
+              <% elsif reply.likes.size > 0 %>
+                <span class="text-xs text-gray-400">♥ <%= reply.likes.size %></span>
+              <% end %>
+              <% if user_signed_in? && (current_user.admin? || reply.user == current_user) %>
+                <%= button_to "Delete", message_path(reply), method: :delete,
+                    data: { turbo_confirm: "Delete this reply?" },
+                    class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0" %>
+              <% end %>
+            </div>
           </div>
           <p class="text-gray-700 whitespace-pre-wrap"><%= reply.body %></p>
         </div>
@@ -99,26 +116,45 @@
     </div>
   <% end %>
 
-  <%# Reply toggle + inline form %>
-  <% if user_signed_in? %>
-    <details class="mt-3">
-      <summary class="text-xs text-green-700 hover:text-green-900 font-medium cursor-pointer list-none">Reply</summary>
-      <div class="mt-3">
-        <%= form_with model: Message.new, local: true do |f| %>
-          <%= f.hidden_field :parent_id, value: message.id %>
-          <div class="mb-2">
-            <%= f.text_area :body, placeholder: "Write a reply...", rows: 2,
-                class: "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" %>
-          </div>
-          <div class="flex items-center justify-between">
-            <label class="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
-              <%= f.check_box :anonymous, class: "accent-green-600" %>
-              Post anonymously
-            </label>
-            <%= f.submit "Reply", class: "bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-green-600 cursor-pointer" %>
-          </div>
-        <% end %>
-      </div>
-    </details>
-  <% end %>
+  <%# Bottom bar: like + reply %>
+  <% user_liked = user_signed_in? && message.likes.any? { |l| l.user_id == current_user.id } %>
+  <div class="mt-3 flex items-center gap-4">
+    <%# Like button %>
+    <% if user_signed_in? %>
+      <% if user_liked %>
+        <%= button_to "♥ #{message.likes.size}", message_like_path(message, message.likes.find { |l| l.user_id == current_user.id }),
+            method: :delete,
+            class: "text-xs text-red-500 hover:text-red-700 bg-transparent border-0 cursor-pointer p-0 font-medium" %>
+      <% else %>
+        <%= button_to "♡#{message.likes.size > 0 ? " #{message.likes.size}" : ""}", message_likes_path(message),
+            method: :post,
+            class: "text-xs text-gray-400 hover:text-red-500 bg-transparent border-0 cursor-pointer p-0" %>
+      <% end %>
+    <% elsif message.likes.size > 0 %>
+      <span class="text-xs text-gray-400">♥ <%= message.likes.size %></span>
+    <% end %>
+
+    <%# Reply toggle %>
+    <% if user_signed_in? %>
+      <details>
+        <summary class="text-xs text-green-700 hover:text-green-900 font-medium cursor-pointer list-none">Reply</summary>
+        <div class="mt-3">
+          <%= form_with model: Message.new, local: true do |f| %>
+            <%= f.hidden_field :parent_id, value: message.id %>
+            <div class="mb-2">
+              <%= f.text_area :body, placeholder: "Write a reply...", rows: 2,
+                  class: "w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500" %>
+            </div>
+            <div class="flex items-center justify-between">
+              <label class="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer">
+                <%= f.check_box :anonymous, class: "accent-green-600" %>
+                Post anonymously
+              </label>
+              <%= f.submit "Reply", class: "bg-green-700 text-white px-3 py-1.5 rounded text-xs font-medium hover:bg-green-600 cursor-pointer" %>
+            </div>
+          <% end %>
+        </div>
+      </details>
+    <% end %>
+  </div>
 </div>

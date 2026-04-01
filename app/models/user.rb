@@ -7,6 +7,7 @@ class User < ApplicationRecord
   has_many :participations, dependent: :destroy
   has_many :seasons, through: :participations
   has_many :messages, dependent: :destroy
+  has_many :likes, dependent: :destroy
 
   validates :name, presence: true, length: { maximum: 100 }
 
