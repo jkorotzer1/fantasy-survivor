@@ -14,6 +14,7 @@ class SeasonsController < ApplicationController
     if @participation
       @picks_by_week = @participation.weekly_picks.includes(:contestant).index_by(&:week_id)
     end
+    @pinned_messages = Message.top_level.pinned.includes(:user, :likes, replies: [:user, :likes], poll_options: :poll_votes)
   end
 
   def standings

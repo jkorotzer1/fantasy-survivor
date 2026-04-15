@@ -22,6 +22,14 @@
   </div>
 </div>
 
+<% if @pinned_messages.any? %>
+  <div class="mb-8 space-y-4">
+    <% @pinned_messages.each do |message| %>
+      <%= render partial: "pages/message", locals: { message: message } %>
+    <% end %>
+  </div>
+<% end %>
+
 <div class="grid gap-8 lg:grid-cols-3">
   <!-- Weeks column -->
   <div class="lg:col-span-2">
