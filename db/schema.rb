@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_04_01_000001) do
+ActiveRecord::Schema[7.2].define(version: 2026_04_16_000001) do
   create_table "contestants", force: :cascade do |t|
     t.integer "season_id", null: false
     t.string "name", limit: 100, null: false
@@ -23,6 +23,19 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_01_000001) do
     t.integer "tribe_from_week"
     t.index ["season_id", "name"], name: "index_contestants_on_season_id_and_name", unique: true
     t.index ["season_id"], name: "index_contestants_on_season_id"
+  end
+
+  create_table "email_logs", force: :cascade do |t|
+    t.string "recipient_email", null: false
+    t.integer "week_id", null: false
+    t.string "mailer", null: false
+    t.string "status", null: false
+    t.text "error_message"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["recipient_email", "week_id", "mailer"], name: "index_email_logs_on_recipient_email_and_week_id_and_mailer"
+    t.index ["status"], name: "index_email_logs_on_status"
+    t.index ["week_id"], name: "index_email_logs_on_week_id"
   end
 
   create_table "likes", force: :cascade do |t|
@@ -164,6 +177,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_04_01_000001) do
   end
 
   add_foreign_key "contestants", "seasons"
+  add_foreign_key "email_logs", "weeks"
   add_foreign_key "likes", "messages"
   add_foreign_key "likes", "users"
   add_foreign_key "messages", "users"
