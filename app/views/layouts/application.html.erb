@@ -3,7 +3,7 @@
   <head>
     <title>Fantasy Survivor</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
-    <script>if(localStorage.getItem('darkMode')==='true'){document.documentElement.classList.add('dark')}</script>
+    <script>if(localStorage.getItem('darkMode')!=='false'){document.documentElement.classList.add('dark')}</script>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
     <%= stylesheet_link_tag "tailwind", "data-turbo-track": "reload" %>
