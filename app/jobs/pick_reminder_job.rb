@@ -15,8 +15,12 @@ class PickReminderJob < ApplicationJob
       @@reminded_week_ids << week.id
 
       week.season.participations.includes(:user).each do |participation|
-        ParticipationMailer.pick_reminder(participation.user, week).deliver_now
-        Rails.logger.info "Sent pick reminder to #{participation.user.email} for Week #{week.number}"
+        begin
+          ParticipationMailer.pick_reminder(participation.user, week).deliver_now
+          Rails.logger.info "[PickReminderJob] Sent reminder to #{participation.user.email} for Week #{week.number}"
+        rescue => e
+          Rails.logger.error "[PickReminderJob] Failed to send to #{participation.user.email}: #{e.class}: #{e.message}"
+        end
       end
     end
   end
